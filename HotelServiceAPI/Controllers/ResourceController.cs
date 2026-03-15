@@ -1,6 +1,9 @@
 ﻿using HotelServiceAPI.Data;
+using HotelServiceAPI.DTOs;
 using HotelServiceAPI.Models;
+using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,21 +20,50 @@ namespace HotelServiceAPI.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<Resource>>> GetResources()
+        [HttpGet("all")]
+        public async Task<ActionResult<List<ResourceGetDTO>>> GetResources()
         {
-            var resources = await _context.Resources.ToListAsync();
+            var resources = await _context.Resources.Include(x => x.Seats).ToListAsync();
+            var resourceDTOs = resources.Adapt<List<ResourceGetDTO>>();
+            return resourceDTOs;
+        }
 
-            return resources;
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ResourceGetDTO>> GetResource(Guid id)
+        {
+            var resource = await _context.Resources.Include(x => x.Seats).FirstOrDefaultAsync(x => x.Id == id);
+            var resourceDTO = resource.Adapt<ResourceGetDTO>();
+            return resourceDTO;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Resource>> CreateResource(Resource resource)
+        public async Task<ActionResult> CreateResource(ResourceCreateDTO resourceDTO)
         {
+            Resource resource = new Resource
+            {
+                Type = resourceDTO.Type,
+                Number = resourceDTO.Number,
+                Floor = resourceDTO.Floor,
+                Capacity = resourceDTO.Capacity
+            };
+            
+            for (int row = 1; row <= resourceDTO.Rows; row++)
+            {
+                for (int seatNum = 1; seatNum <= resourceDTO.SeatsPerRow; seatNum++)
+                {
+                    Seat seat = new Seat
+                    {
+                        Row = row,
+                        Number = seatNum,
+                        Resource = resource
+                    };
+                    resource.Seats.Add(seat);
+                }
+            }
+
             _context.Resources.Add(resource);
             await _context.SaveChangesAsync();
-            //return CreatedAtAction(nameof(GetResources), new { id = resource.Id }, resource);
-            return resource;
+            return Ok();
         }
     }
 }

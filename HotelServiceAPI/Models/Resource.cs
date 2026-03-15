@@ -1,11 +1,23 @@
-﻿namespace HotelServiceAPI.Models
+﻿
+using System.ComponentModel.DataAnnotations;
+using HotelServiceAPI.Enums;
+using Microsoft.EntityFrameworkCore;
+
+namespace HotelServiceAPI.Models
 {
     public class Resource
     {
+        [Key]
         public Guid Id { get; set; }
-        required public string Number { get; set; }
+        public HotelResourceType Type { get; set; }
+        public int Number { get; set; }
         public int Floor { get; set; }
         public int Capacity { get; set; }
-        public bool HasSeating { get; set; }
+
+        // 1:N - has many
+        public ICollection<Seat> Seats { get; set; } = new List<Seat>();
+
+        // N:N
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

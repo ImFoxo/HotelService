@@ -1,5 +1,6 @@
 using HotelServiceAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using To_Do_app_server.Data;
 
 namespace HotelServiceAPI
 {
@@ -47,8 +48,9 @@ namespace HotelServiceAPI
 
             app.UseAuthorization();
 
-
             app.MapControllers();
+
+            MapsterInitializer.SetMapsterConfig();
 
             app.Run();
         }
