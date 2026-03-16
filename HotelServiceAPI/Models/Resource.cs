@@ -19,5 +19,22 @@ namespace HotelServiceAPI.Models
 
         // N:N
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
+        public void GenerateSeats(int rows, int seatsPerRow)
+        {
+            for (int row = 1; row <= rows; row++)
+            {
+                for (int seatNumber = 1; seatNumber <= seatsPerRow; seatNumber++)
+                {
+                    Seats.Add(new Seat
+                    {
+                        Id = Guid.NewGuid(),
+                        Row = row,
+                        Number = seatNumber,
+                        ResourceId = this.Id
+                    });
+                }
+            }
+        }
     }
 }

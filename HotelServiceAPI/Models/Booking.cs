@@ -11,7 +11,8 @@ namespace HotelServiceAPI.Models
         public DateTime EndTime { get; set; }
 
         // N:1 - belongs to one
-        //public Guid UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public HotelDbUser? User { get; set; }
 
         // N:N
         public ICollection<Resource> Resources { get; set; } = new List<Resource>();

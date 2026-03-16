@@ -46,20 +46,9 @@ namespace HotelServiceAPI.Controllers
                 Floor = resourceDTO.Floor,
                 Capacity = resourceDTO.Capacity
             };
-            
-            for (int row = 1; row <= resourceDTO.Rows; row++)
-            {
-                for (int seatNum = 1; seatNum <= resourceDTO.SeatsPerRow; seatNum++)
-                {
-                    Seat seat = new Seat
-                    {
-                        Row = row,
-                        Number = seatNum,
-                        Resource = resource
-                    };
-                    resource.Seats.Add(seat);
-                }
-            }
+
+            if (resourceDTO.Rows > 0 && resourceDTO.SeatsPerRow > 0)
+                resource.GenerateSeats((int)resourceDTO.Rows, (int)resourceDTO.SeatsPerRow);
 
             _context.Resources.Add(resource);
             await _context.SaveChangesAsync();

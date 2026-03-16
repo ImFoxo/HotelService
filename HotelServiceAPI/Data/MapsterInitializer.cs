@@ -10,7 +10,8 @@ namespace To_Do_app_server.Data
         {
             TypeAdapterConfig<Resource, ResourceGetDTO>.NewConfig()
                 .Map(dest => dest.SeatIds, src => src.Seats.Select(s => s.Id));
-
+            TypeAdapterConfig<Booking, BookingGetDTO>.NewConfig()
+                .Map(dest => dest.ResourceIds, src => src.Resources.Select(r => r.Id));
         }
     }
 }

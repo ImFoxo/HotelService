@@ -1,10 +1,11 @@
 ﻿using HotelServiceAPI.Enums;
 using HotelServiceAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelServiceAPI.Data
 {
-    public class HotelDbContext : DbContext
+    public class HotelDbContext : IdentityDbContext<HotelDbUser>
     {
         public HotelDbContext(DbContextOptions<HotelDbContext> options) : base(options)
         {
