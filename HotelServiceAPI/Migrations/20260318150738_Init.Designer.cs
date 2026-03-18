@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelServiceAPI.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    [Migration("20260316150009_Init")]
+    [Migration("20260318150738_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -25,19 +25,44 @@ namespace HotelServiceAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BookingResource", b =>
+            modelBuilder.Entity("BookableItemBooking", b =>
                 {
+                    b.Property<Guid>("BookedItemsId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("BookingsId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ResourcesId")
+                    b.HasKey("BookedItemsId", "BookingsId");
+
+                    b.HasIndex("BookingsId");
+
+                    b.ToTable("BookableItemBooking");
+                });
+
+            modelBuilder.Entity("HotelServiceAPI.Models.BookableItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("BookingsId", "ResourcesId");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("ResourcesId");
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
 
-                    b.ToTable("BookingResource");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BookableItems", (string)null);
+
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("HotelServiceAPI.Models.Booking", b =>
@@ -87,6 +112,9 @@ namespace HotelServiceAPI.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
@@ -99,6 +127,9 @@ namespace HotelServiceAPI.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -144,63 +175,6 @@ namespace HotelServiceAPI.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("HotelServiceAPI.Models.Resource", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Floor")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Resources");
-                });
-
-            modelBuilder.Entity("HotelServiceAPI.Models.Seat", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("Deleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastUpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Number")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("ResourceId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Row")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ResourceId");
-
-                    b.ToTable("Seats");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -336,17 +310,54 @@ namespace HotelServiceAPI.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BookingResource", b =>
+            modelBuilder.Entity("HotelServiceAPI.Models.Resource", b =>
                 {
-                    b.HasOne("HotelServiceAPI.Models.Booking", null)
+                    b.HasBaseType("HotelServiceAPI.Models.BookableItem");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Floor")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.ToTable("Resources", (string)null);
+                });
+
+            modelBuilder.Entity("HotelServiceAPI.Models.Seat", b =>
+                {
+                    b.HasBaseType("HotelServiceAPI.Models.BookableItem");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Row")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ResourceId");
+
+                    b.ToTable("Seats", (string)null);
+                });
+
+            modelBuilder.Entity("BookableItemBooking", b =>
+                {
+                    b.HasOne("HotelServiceAPI.Models.BookableItem", null)
                         .WithMany()
-                        .HasForeignKey("BookingsId")
+                        .HasForeignKey("BookedItemsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HotelServiceAPI.Models.Resource", null)
+                    b.HasOne("HotelServiceAPI.Models.Booking", null)
                         .WithMany()
-                        .HasForeignKey("ResourcesId")
+                        .HasForeignKey("BookingsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -360,17 +371,6 @@ namespace HotelServiceAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("HotelServiceAPI.Models.Seat", b =>
-                {
-                    b.HasOne("HotelServiceAPI.Models.Resource", "Resource")
-                        .WithMany("Seats")
-                        .HasForeignKey("ResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -422,6 +422,32 @@ namespace HotelServiceAPI.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelServiceAPI.Models.Resource", b =>
+                {
+                    b.HasOne("HotelServiceAPI.Models.BookableItem", null)
+                        .WithOne()
+                        .HasForeignKey("HotelServiceAPI.Models.Resource", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelServiceAPI.Models.Seat", b =>
+                {
+                    b.HasOne("HotelServiceAPI.Models.BookableItem", null)
+                        .WithOne()
+                        .HasForeignKey("HotelServiceAPI.Models.Seat", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelServiceAPI.Models.Resource", "Resource")
+                        .WithMany("Seats")
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("HotelServiceAPI.Models.HotelDbUser", b =>

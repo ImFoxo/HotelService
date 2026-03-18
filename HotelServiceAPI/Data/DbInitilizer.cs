@@ -129,7 +129,7 @@ namespace HotelServiceAPI.Data
                     StartTime = DateTime.Now.AddDays(1),
                     EndTime = DateTime.Now.AddDays(2)
                 };
-                bookingAdmin.Resources.Add(resources[0]);
+                bookingAdmin.BookedItems.Add(resources[0]);
                 context.Bookings.Add(bookingAdmin);
                 await context.SaveChangesAsync();
 
@@ -139,7 +139,7 @@ namespace HotelServiceAPI.Data
                     StartTime = DateTime.Now.AddDays(1),
                     EndTime = DateTime.Now.AddDays(2)
                 };
-                bookingUser1.Resources.Add(resources[1]);
+                bookingUser1.BookedItems.Add(resources[1]);
                 context.Bookings.Add(bookingUser1);
                 await context.SaveChangesAsync();
 
@@ -149,7 +149,7 @@ namespace HotelServiceAPI.Data
                     StartTime = DateTime.Now.AddDays(3),
                     EndTime = DateTime.Now.AddDays(4)
                 };
-                bookingUser2.Resources.Add(resources[1]);
+                bookingUser2.BookedItems.Add(resources[1]);
                 context.Bookings.Add(bookingUser2);
                 await context.SaveChangesAsync();
             }

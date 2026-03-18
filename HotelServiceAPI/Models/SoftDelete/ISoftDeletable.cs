@@ -6,6 +6,5 @@
         DateTime? DeletedAt { get; set; }
         DateTime CreatedAt { get; set; }
         DateTime? LastUpdatedAt { get; set; }
-        void SetDeleted();
     }
 }

@@ -1,18 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 using To_Do_app_server.Models.SoftDelete;
 
 namespace HotelServiceAPI.Models
 {
-    public class HotelDbUser : IdentityUser, ISoftDeletable
+    public abstract class BookableItem : ISoftDeletable
     {
-        [Required]
-        public bool Deleted { get; set; } = false;
+        [Key]
+        public Guid Id { get; set; }
+        public bool Deleted { get; set; }
         public DateTime? DeletedAt { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
         public DateTime? LastUpdatedAt { get; set; }
-        
-        // 1:N - has many
+
+        // N:N
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

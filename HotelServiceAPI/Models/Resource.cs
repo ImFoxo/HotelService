@@ -5,10 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelServiceAPI.Models
 {
-    public class Resource
+    public class Resource : BookableItem
     {
-        [Key]
-        public Guid Id { get; set; }
         public HotelResourceType Type { get; set; }
         public int Number { get; set; }
         public int Floor { get; set; }
@@ -16,9 +14,6 @@ namespace HotelServiceAPI.Models
 
         // 1:N - has many
         public ICollection<Seat> Seats { get; set; } = new List<Seat>();
-
-        // N:N
-        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
         public void GenerateSeats(int rows, int seatsPerRow)
         {

@@ -32,6 +32,8 @@ namespace HotelServiceAPI.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Deleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -53,18 +55,18 @@ namespace HotelServiceAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Resources",
+                name: "BookableItems",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    Number = table.Column<int>(type: "int", nullable: false),
-                    Floor = table.Column<int>(type: "int", nullable: false),
-                    Capacity = table.Column<int>(type: "int", nullable: false)
+                    Deleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Resources", x => x.Id);
+                    table.PrimaryKey("PK_BookableItems", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -198,51 +200,74 @@ namespace HotelServiceAPI.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Resources",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Number = table.Column<int>(type: "int", nullable: false),
+                    Floor = table.Column<int>(type: "int", nullable: false),
+                    Capacity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Resources", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Resources_BookableItems_Id",
+                        column: x => x.Id,
+                        principalTable: "BookableItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BookableItemBooking",
+                columns: table => new
+                {
+                    BookedItemsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    BookingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BookableItemBooking", x => new { x.BookedItemsId, x.BookingsId });
+                    table.ForeignKey(
+                        name: "FK_BookableItemBooking_BookableItems_BookedItemsId",
+                        column: x => x.BookedItemsId,
+                        principalTable: "BookableItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_BookableItemBooking_Bookings_BookingsId",
+                        column: x => x.BookingsId,
+                        principalTable: "Bookings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Seats",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Number = table.Column<int>(type: "int", nullable: false),
                     Row = table.Column<int>(type: "int", nullable: false),
-                    ResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Deleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ResourceId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Seats", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Seats_BookableItems_Id",
+                        column: x => x.Id,
+                        principalTable: "BookableItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Seats_Resources_ResourceId",
                         column: x => x.ResourceId,
                         principalTable: "Resources",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BookingResource",
-                columns: table => new
-                {
-                    BookingsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ResourcesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BookingResource", x => new { x.BookingsId, x.ResourcesId });
-                    table.ForeignKey(
-                        name: "FK_BookingResource_Bookings_BookingsId",
-                        column: x => x.BookingsId,
-                        principalTable: "Bookings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BookingResource_Resources_ResourcesId",
-                        column: x => x.ResourcesId,
-                        principalTable: "Resources",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -285,9 +310,9 @@ namespace HotelServiceAPI.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BookingResource_ResourcesId",
-                table: "BookingResource",
-                column: "ResourcesId");
+                name: "IX_BookableItemBooking_BookingsId",
+                table: "BookableItemBooking",
+                column: "BookingsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_UserId",
@@ -319,7 +344,7 @@ namespace HotelServiceAPI.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BookingResource");
+                name: "BookableItemBooking");
 
             migrationBuilder.DropTable(
                 name: "Seats");
@@ -335,6 +360,9 @@ namespace HotelServiceAPI.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "BookableItems");
         }
     }
 }

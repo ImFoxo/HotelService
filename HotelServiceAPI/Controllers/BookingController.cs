@@ -2,7 +2,9 @@
 using HotelServiceAPI.DTOs;
 using HotelServiceAPI.Models;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,9 +12,9 @@ namespace HotelServiceAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BookingController : ControllerBase
+    public class BookingController : HotelControllerBase
     {
-        protected readonly HotelDbContext _context;
+        private readonly HotelDbContext _context;
         public BookingController(HotelDbContext context)
         {
             _context = context;
@@ -21,9 +23,76 @@ namespace HotelServiceAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<BookingGetDTO>>> GetBookings()
         {
-            var bookings = await _context.Bookings.Include(b => b.Resources).ToListAsync();
+            var userId = CurrentUserId;
+
+            var bookings = await _context.Bookings
+                                    .Where(b => b.UserId == userId)
+                                    .Include(b => b.BookedItems)
+                                    .ToListAsync();
+
             var bookingDTOs = bookings.Adapt<List<BookingGetDTO>>();
             return bookingDTOs;
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<BookingGetDTO>>> GetAllBookings()
+        {
+            var bookings = await _context.Bookings
+                                    .Include(b => b.BookedItems)
+                                    .ToListAsync();
+
+            var bookingDTOs = bookings.Adapt<List<BookingGetDTO>>();
+            return bookingDTOs;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> PostBooking(BookingPostDTO bookingPostDTO)
+        {
+            var userId = CurrentUserId;
+
+            Booking booking = bookingPostDTO.Adapt<Booking>();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var collidingBookings = await _context.Bookings
+                    .Where(b => b.StartTime < bookingPostDTO.StartTime &&
+                                b.EndTime > bookingPostDTO.EndTime &&
+                                b.BookedItems.Any(i => bookingPostDTO.ItemIds.Contains(i.Id)))
+                    .Select(b => new
+                    {
+                        b.Id,
+                        Items = b.BookedItems
+                            .Where(i => bookingPostDTO.ItemIds.Contains(i.Id))
+                            .Select(i => i.Id)
+                    })
+                    .ToListAsync();
+                
+                if (collidingBookings.Any())
+                    return Conflict($"The following items are already booked for the selected time: {string.Join(", ", collidingBookings.SelectMany(c => c.Items))}");
+
+                var itemsToBook = await _context.BookableItems
+                                        .Where(i => bookingPostDTO.ItemIds.Contains(i.Id))
+                                        .ToListAsync();
+
+                if (itemsToBook.Count != bookingPostDTO.ItemIds.Count)
+                    return NotFound("One or more of the specified items were not found.");
+
+                Booking newBooking = bookingPostDTO.Adapt<Booking>();
+                newBooking.BookedItems = itemsToBook;
+                newBooking.UserId = userId;
+
+                _context.Bookings.Add(newBooking);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return Ok(new { Message = "Rezerwacja grupowa utworzona", BookingId = newBooking.Id });
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the booking.");
+            }
         }
     }
 }

@@ -3,10 +3,8 @@ using To_Do_app_server.Models.SoftDelete;
 
 namespace HotelServiceAPI.Models
 {
-    public class Seat : SoftDeletableBase
+    public class Seat : BookableItem
     {
-        [Key]
-        public Guid Id { get; set; }
         public int Number{ get; set; }
         public int Row { get; set; }
 

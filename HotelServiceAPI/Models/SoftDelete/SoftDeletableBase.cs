@@ -4,6 +4,9 @@ namespace To_Do_app_server.Models.SoftDelete
 {
     public class SoftDeletableBase : ISoftDeletable
     {
+        [Key]
+        public Guid Id { get; set; }
+
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastUpdatedAt {  get; set; }

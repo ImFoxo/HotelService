@@ -5,8 +5,6 @@ namespace HotelServiceAPI.Models
 {
     public class Booking : SoftDeletableBase
     {
-        [Key]
-        public Guid Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
@@ -15,6 +13,6 @@ namespace HotelServiceAPI.Models
         public HotelDbUser? User { get; set; }
 
         // N:N
-        public ICollection<Resource> Resources { get; set; } = new List<Resource>();
+        public ICollection<BookableItem> BookedItems { get; set; } = new List<BookableItem>();
     }
 }

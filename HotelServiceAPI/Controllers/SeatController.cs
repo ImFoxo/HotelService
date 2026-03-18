@@ -10,7 +10,7 @@ namespace HotelServiceAPI.Controllers
     [ApiController]
     public class SeatController : ControllerBase
     {
-        public readonly HotelDbContext _context;
+        private readonly HotelDbContext _context;
         public SeatController(HotelDbContext context)
         {
             _context = context;

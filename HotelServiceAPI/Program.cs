@@ -3,6 +3,7 @@ using HotelServiceAPI.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using To_Do_app_server.Data;
 
 namespace HotelServiceAPI
@@ -35,7 +36,37 @@ namespace HotelServiceAPI
             builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Hotel Booking API", Version = "v1" });
+
+                // Security scheme (Bearer Token)
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Wpisz sam token w polu poni¿ej (bez s³owa Bearer)."
+                });
+
+                // Documentation
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
 
             var app = builder.Build();
             
@@ -62,6 +93,8 @@ namespace HotelServiceAPI
                 app.UseSwaggerUI();
             }
 
+            if (!app.Environment.IsDevelopment())
+                app.UseHsts();
             app.UseHttpsRedirection();
 
             // Create login and register endpoints

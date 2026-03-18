@@ -11,9 +11,9 @@ namespace HotelServiceAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ResourceController : ControllerBase
+    public class ResourceController : HotelControllerBase
     {
-        protected readonly HotelDbContext _context;
+        private readonly HotelDbContext _context;
 
         public ResourceController(HotelDbContext context)
         {
