@@ -21,7 +21,7 @@ namespace HotelServiceAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<BookingGetDTO>>> GetBookings()
+        public async Task<ActionResult<List<BookingGetDTO>>> GetMyBookings()
         {
             var userId = CurrentUserId;
 
@@ -51,7 +51,10 @@ namespace HotelServiceAPI.Controllers
         {
             var userId = CurrentUserId;
 
-            Booking booking = bookingPostDTO.Adapt<Booking>();
+            Booking newBooking = bookingPostDTO.Adapt<Booking>();
+
+            if (newBooking.StartTime >= newBooking.EndTime)
+                return BadRequest("Reservation must begin before it ends.");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -79,14 +82,13 @@ namespace HotelServiceAPI.Controllers
                 if (itemsToBook.Count != bookingPostDTO.ItemIds.Count)
                     return NotFound("One or more of the specified items were not found.");
 
-                Booking newBooking = bookingPostDTO.Adapt<Booking>();
                 newBooking.BookedItems = itemsToBook;
                 newBooking.UserId = userId;
 
                 _context.Bookings.Add(newBooking);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-                return Ok(new { Message = "Rezerwacja grupowa utworzona", BookingId = newBooking.Id });
+                return Ok(new { Message = "Reservation created successfully.", BookingId = newBooking.Id });
             }
             catch (Exception)
             {

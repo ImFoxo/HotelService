@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
+using HotelServiceAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelServiceAPI.Controllers
@@ -12,3 +14,5 @@ namespace HotelServiceAPI.Controllers
         protected string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
     }
 }
+
+    

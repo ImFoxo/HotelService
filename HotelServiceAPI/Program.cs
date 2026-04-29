@@ -1,8 +1,13 @@
+using System.Security.Claims;
+using System.Text;
 using HotelServiceAPI.Data;
 using HotelServiceAPI.Models;
+using HotelServiceAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using To_Do_app_server.Data;
 
@@ -19,9 +24,41 @@ namespace HotelServiceAPI
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Identity
-            builder.Services.AddIdentityApiEndpoints<HotelDbUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<HotelDbContext>();
+            builder.Services.AddIdentity<HotelDbUser, IdentityRole>()
+                .AddEntityFrameworkStores<HotelDbContext>()
+                .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddGoogle(options =>
+            {
+                options.ClientId = builder.Configuration["Authentication:Google:ClientId"]
+                    ?? throw new InvalidOperationException("Google ClientId is not configured.");
+                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+                    ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
+                options.SaveTokens = true;
+                options.SignInScheme = IdentityConstants.ExternalScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+                    NameClaimType = ClaimTypes.NameIdentifier,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
             // Identity options
             // TODO: remove in production
@@ -47,8 +84,7 @@ namespace HotelServiceAPI
                     Type = SecuritySchemeType.Http,
                     Scheme = "Bearer",
                     BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "Wpisz sam token w polu poni¿ej (bez s³owa Bearer)."
+                    Description = "Enter only token (without word 'Bearer')"
                 });
 
                 // Documentation
@@ -67,6 +103,8 @@ namespace HotelServiceAPI
                     }
                 });
             });
+
+            builder.Services.AddScoped<TokenService>();
 
             var app = builder.Build();
             
@@ -96,9 +134,6 @@ namespace HotelServiceAPI
             if (!app.Environment.IsDevelopment())
                 app.UseHsts();
             app.UseHttpsRedirection();
-
-            // Create login and register endpoints
-            app.MapIdentityApi<HotelDbUser>();
             
             app.UseAuthentication();
             app.UseAuthorization();
