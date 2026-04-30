@@ -7,6 +7,7 @@ namespace HotelServiceAPI.Models
     {
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public bool IsPrivate { get; set; }
 
         // N:1 - belongs to one
         public string UserId { get; set; } = string.Empty;

@@ -2,6 +2,7 @@
 using HotelServiceAPI.DTOs;
 using HotelServiceAPI.Models;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace HotelServiceAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<SeatGetDTO>>> GetSeats()
         {
             var seats = await _context.Seats.ToListAsync();

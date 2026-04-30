@@ -59,18 +59,18 @@ namespace HotelServiceAPI.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var collidingBookings = await _context.Bookings
-                    .Where(b => b.StartTime < bookingPostDTO.StartTime &&
-                                b.EndTime > bookingPostDTO.EndTime &&
-                                b.BookedItems.Any(i => bookingPostDTO.ItemIds.Contains(i.Id)))
-                    .Select(b => new
-                    {
-                        b.Id,
-                        Items = b.BookedItems
-                            .Where(i => bookingPostDTO.ItemIds.Contains(i.Id))
-                            .Select(i => i.Id)
-                    })
-                    .ToListAsync();
+                    var collidingBookings = await _context.Bookings
+                        .Where(b => b.StartTime < bookingPostDTO.EndTime &&
+                                    b.EndTime > bookingPostDTO.StartTime &&
+                                    b.BookedItems.Any(i => bookingPostDTO.ItemIds.Contains(i.Id)))
+                        .Select(b => new
+                        {
+                            b.Id,
+                            Items = b.BookedItems
+                                .Where(i => bookingPostDTO.ItemIds.Contains(i.Id))
+                                .Select(i => i.Id)
+                        })
+                        .ToListAsync();
                 
                 if (collidingBookings.Any())
                     return Conflict($"The following items are already booked for the selected time: {string.Join(", ", collidingBookings.SelectMany(c => c.Items))}");
@@ -78,6 +78,19 @@ namespace HotelServiceAPI.Controllers
                 var itemsToBook = await _context.BookableItems
                                         .Where(i => bookingPostDTO.ItemIds.Contains(i.Id))
                                         .ToListAsync();
+
+                foreach (var item in itemsToBook)
+                {
+                    if (item is Seat s)
+                    {
+                        var events = _context.Bookings.Where(b => b.StartTime < bookingPostDTO.EndTime &&
+                                                             b.EndTime > bookingPostDTO.StartTime);
+                        if (events == null)
+                            return BadRequest("No events found for chosen seat in reservation time, seat id: " + item.Id);
+                        if (events.Any(e => e.IsPrivate))
+                            return BadRequest("One or more event connected to chosen seat is private, seat id: " + item.Id);
+                    }
+                }
 
                 if (itemsToBook.Count != bookingPostDTO.ItemIds.Count)
                     return NotFound("One or more of the specified items were not found.");

@@ -6,7 +6,6 @@ using HotelServiceAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using To_Do_app_server.Data;
@@ -124,7 +123,6 @@ namespace HotelServiceAPI
                 }
             }
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -134,7 +132,7 @@ namespace HotelServiceAPI
             if (!app.Environment.IsDevelopment())
                 app.UseHsts();
             app.UseHttpsRedirection();
-            
+
             app.UseAuthentication();
             app.UseAuthorization();
 
