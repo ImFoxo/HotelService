@@ -5,8 +5,8 @@ namespace HotelServiceAPI.Models
 {
     public class Booking : SoftDeletableBase
     {
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public DateOnly StartTime { get; set; }
+        public DateOnly EndTime { get; set; }
         public bool IsPrivate { get; set; }
 
         // N:1 - belongs to one

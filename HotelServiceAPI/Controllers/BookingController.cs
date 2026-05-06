@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelServiceAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class BookingController : HotelControllerBase
     {
@@ -103,10 +103,10 @@ namespace HotelServiceAPI.Controllers
                 await transaction.CommitAsync();
                 return Ok(new { Message = "Reservation created successfully.", BookingId = newBooking.Id });
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the booking.");
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
         }
     }
