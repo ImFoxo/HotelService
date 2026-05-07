@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HotelServiceAPI.Controllers
 {
@@ -55,6 +56,8 @@ namespace HotelServiceAPI.Controllers
 
             if (newBooking.StartTime >= newBooking.EndTime)
                 return BadRequest("Reservation must begin before it ends.");
+            if (newBooking.StartTime < DateOnly.FromDateTime(DateTime.Now))
+                return BadRequest("Reservation can't include past dates.");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -83,9 +86,9 @@ namespace HotelServiceAPI.Controllers
                 {
                     if (item is Seat s)
                     {
-                        var events = _context.Bookings.Where(b => b.StartTime < bookingPostDTO.EndTime &&
-                                                             b.EndTime > bookingPostDTO.StartTime);
-                        if (events == null)
+                        var events = _context.Bookings.Where(b => b.BookedItems.Any(bi => bi.Id == s.ResourceId) && b.StartTime <= bookingPostDTO.StartTime &&
+                                                             b.EndTime >= bookingPostDTO.EndTime).ToList();
+                        if (events.IsNullOrEmpty())
                             return BadRequest("No events found for chosen seat in reservation time, seat id: " + item.Id);
                         if (events.Any(e => e.IsPrivate))
                             return BadRequest("One or more event connected to chosen seat is private, seat id: " + item.Id);

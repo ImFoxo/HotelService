@@ -14,10 +14,12 @@ namespace HotelServiceAPI.Data
         {
             context.Database.EnsureCreated();
 
+            Console.WriteLine("Starting seeding data.");
             await GenerateRolesAsync(roleManager);
             await GenerateUsersAsync(userManager);
             await GenerateResourcesAsync(context);
             await GenerateBookingsAsync(context, userManager);
+            Console.WriteLine("Seeding data completed.");
 
             context.SaveChanges();
         }
@@ -56,7 +58,7 @@ namespace HotelServiceAPI.Data
                 }
             }
 
-            string[] userEmails = ["user1@user.com", "user2@user.com"];
+            string[] userEmails = ["user1@user.com", "user2@user.com", "user3@user.com"];
             string userPassword = "user123";
             foreach (var userEmail in userEmails)
             {
@@ -116,10 +118,10 @@ namespace HotelServiceAPI.Data
                     return;
                 }
 
-                List <Resource> resources = context.Resources.Where(r => r.Type == HotelResourceType.Room).ToList();
-                if (resources.Count < 2)
+                List<Resource> rooms = context.Resources.Where(r => r.Type == HotelResourceType.Room).ToList();
+                if (rooms.Count < 2)
                 {
-                    Console.WriteLine("Error: Not enough resources available to create bookings.");
+                    Console.WriteLine("Error: Not enough rooms available to create bookings.");
                     return;
                 }
 
@@ -129,7 +131,7 @@ namespace HotelServiceAPI.Data
                     StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(1),
                     EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(2)
                 };
-                bookingAdmin.BookedItems.Add(resources[0]);
+                bookingAdmin.BookedItems.Add(rooms[0]);
                 context.Bookings.Add(bookingAdmin);
                 await context.SaveChangesAsync();
 
@@ -139,7 +141,7 @@ namespace HotelServiceAPI.Data
                     StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(1),
                     EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(2)
                 };
-                bookingUser1.BookedItems.Add(resources[1]);
+                bookingUser1.BookedItems.Add(rooms[1]);
                 context.Bookings.Add(bookingUser1);
                 await context.SaveChangesAsync();
 
@@ -149,8 +151,35 @@ namespace HotelServiceAPI.Data
                     StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(3),
                     EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(4)
                 };
-                bookingUser2.BookedItems.Add(resources[1]);
+                bookingUser2.BookedItems.Add(rooms[1]);
                 context.Bookings.Add(bookingUser2);
+                await context.SaveChangesAsync();
+
+                List<Resource> halls = context.Resources.Where(r => r.Type == HotelResourceType.Hall).ToList();
+                if (halls.Count < 2)
+                {
+                    Console.WriteLine("Error: Not enough halls available to create bookings.");
+                    return;
+                }
+                var bookingHallUser1 = new Booking
+                {
+                    UserId = user1!.Id,
+                    StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(5),
+                    EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(6),
+                    IsPrivate = true
+                };
+                bookingHallUser1.BookedItems.Add(halls[0]);
+                context.Bookings.Add(bookingHallUser1);
+                await context.SaveChangesAsync();
+
+                var bookingHallUser2 = new Booking
+                {
+                    UserId = user2!.Id,
+                    StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(5),
+                    EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(6),
+                };
+                bookingHallUser2.BookedItems.Add(halls[1]);
+                context.Bookings.Add(bookingHallUser2);
                 await context.SaveChangesAsync();
             }
         }

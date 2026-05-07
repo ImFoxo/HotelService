@@ -19,14 +19,14 @@ namespace HotelServiceAPI.Services
             _userManager = userManager;
         }
 
-        public async Task<string> CreateToken(HotelDbUser user)
+        public async Task<string> CreateTokenAsync(HotelDbUser user)
         {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
             var roles = await _userManager.GetRolesAsync(user);
-            //claims = claims.Concat(roles.Select(r => new Claim(ClaimTypes.Role, r))).ToArray();
+            claims = claims.Concat(roles.Select(r => new Claim(ClaimTypes.Role, r))).ToArray();
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

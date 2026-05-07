@@ -28,7 +28,7 @@ namespace HotelServiceAPI.Controllers
             return seatDTOs;
         }
 
-        [HttpGet("resource/{id}")]
+        [HttpGet("byresource/{id}")]
         public async Task<ActionResult<List<SeatGetDTO>>> GetSeatsByResource(Guid id)
         {
             var resource = await _context.Resources.Include(x => x.Seats).FirstOrDefaultAsync(x => x.Id == id);

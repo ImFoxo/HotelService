@@ -7,7 +7,7 @@ namespace HotelServiceAPI.Models
     {
         public DateOnly StartTime { get; set; }
         public DateOnly EndTime { get; set; }
-        public bool IsPrivate { get; set; }
+        public bool IsPrivate { get; set; } = false; // for private events when booking halls
 
         // N:1 - belongs to one
         public string UserId { get; set; } = string.Empty;

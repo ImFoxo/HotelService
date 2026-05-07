@@ -22,6 +22,7 @@ namespace TestHotelService
         {
         }
 
+        // Unit tests
         [Fact]
         public async Task SeedData_ReturnsSuccess()
         {
@@ -76,7 +77,7 @@ namespace TestHotelService
         }
 
         [Fact]
-        public async Task Post_Register_ReturnsWeakPassword()
+        public async Task Post_Register_WeakPassword_ReturnsBadRequest()
         {
             // Arrange
             SeedMockData();
@@ -104,7 +105,7 @@ namespace TestHotelService
         }
 
         [Fact]
-        public async Task Post_Register_ReturnsDuplicateEmail()
+        public async Task Post_Register_DuplicateEmail_ReturnsBadRequest()
         {
             // Arrange
             SeedMockData();
@@ -155,7 +156,7 @@ namespace TestHotelService
         }
 
         [Fact]
-        public async Task Post_Booking_ReturnsOverlappingDates()
+        public async Task Post_Booking_OverlappingDates_ReturnsConflict()
         {
             // Arrange
             SeedMockData();
@@ -181,5 +182,68 @@ namespace TestHotelService
                 response.StatusCode.Should().Be(HttpStatusCode.Conflict); 
             }
         }
+
+        [Fact]
+        public async Task Post_Booking_SeatForPrivateEvent_ReturnsBadRequest()
+        {
+            // Arrange
+            SeedMockData();
+            await SetUserJWT(user3Email, userPassword);
+
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+                var privateEvent = await context.Bookings.Include(b => b.BookedItems).FirstOrDefaultAsync(b => b.IsPrivate);
+                var resourceId = privateEvent!.BookedItems.OfType<Resource>().FirstOrDefault()!.Id;
+                var resource = await context.Resources.Include(r => r.Seats).FirstOrDefaultAsync(r => r.Id == resourceId);
+                var seat = resource!.Seats.FirstOrDefault();
+                var seatId = seat!.Id;
+
+                var bookingData = new BookingPostDTO
+                {
+                    StartTime = privateEvent.StartTime,
+                    EndTime = privateEvent.EndTime,
+                    ItemIds = { seatId }
+                };
+                var bookingContent = new StringContent(JsonConvert.SerializeObject(bookingData), Encoding.UTF8, "application/json");
+
+                // Act
+                var response = await _client.PostAsync("/booking", bookingContent);
+
+                // Assert
+                privateEvent.IsPrivate.Should().BeTrue();
+                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            }
+        }
+
+        [Fact]
+        public async Task Post_Booking_SeatForNonExistingEvent_ReturnsBadRequest()
+        {
+            // Arrange
+            SeedMockData();
+            await SetUserJWT(user3Email, userPassword);
+
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+                var seat = context.Seats.FirstOrDefault();
+
+                var bookingData = new BookingPostDTO
+                {
+                    StartTime = DateOnly.FromDateTime(DateTime.Now).AddDays(100),
+                    EndTime = DateOnly.FromDateTime(DateTime.Now).AddDays(101),
+                    ItemIds = { seat!.Id }
+                };
+                var bookingContent = new StringContent(JsonConvert.SerializeObject(bookingData), Encoding.UTF8, "application/json");
+
+                // Act
+                var response = await _client.PostAsync("/booking", bookingContent);
+
+                // Assert
+                response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+            }
+        }
+
     }
 }

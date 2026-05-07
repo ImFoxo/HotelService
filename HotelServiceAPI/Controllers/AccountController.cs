@@ -56,7 +56,7 @@ namespace HotelServiceAPI.Controllers
                 return BadRequest(result.Errors);
             }
 
-            var token = _tokenService.CreateToken(user);
+            var token = await _tokenService.CreateTokenAsync(user);
 
             return Ok(new { token });
         }
@@ -72,7 +72,7 @@ namespace HotelServiceAPI.Controllers
             if (!(await _userManager.CheckPasswordAsync(user!, model.Password)))
                 return BadRequest("Email or password incorrect");
 
-            var token = _tokenService.CreateToken(user);
+            var token = await _tokenService.CreateTokenAsync(user);
             return Ok(new { token });
         }
 
@@ -100,7 +100,7 @@ namespace HotelServiceAPI.Controllers
                 if (user.Deleted)
                     return Unauthorized("Account is deactivated");
 
-                var token = _tokenService.CreateToken(user);
+                var token = await _tokenService.CreateTokenAsync(user);
                 return Ok(new { token });
             }
             else // Create new if user doesn't exist
@@ -117,7 +117,7 @@ namespace HotelServiceAPI.Controllers
                 if (createResult.Succeeded)
                 {
                     await _userManager.AddLoginAsync(user, info);
-                    var token = _tokenService.CreateToken(user);
+                    var token = await _tokenService.CreateTokenAsync(user);
                     return Ok(new
                     {
                         Token = token,

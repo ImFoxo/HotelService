@@ -23,6 +23,7 @@ namespace TestHotelService
         // Email constants for test users
         protected readonly string user1Email = "user1@user.com";
         protected readonly string user2Email = "user2@user.com";
+        protected readonly string user3Email = "user3@user.com";
         protected readonly string adminEmail = "admin@admin.com";
         protected readonly string userPassword = "user123";
         protected readonly string adminPassword = "admin123";
