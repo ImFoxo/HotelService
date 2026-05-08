@@ -5,7 +5,7 @@ VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelServiceAPI", "HotelServiceAPI\HotelServiceAPI.csproj", "{B5248517-E54A-4D78-9E3F-FB3EC4EC2924}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestHotelService", "TestHotelService\TestHotelService.csproj", "{CACC827D-77AA-4810-BFA4-B86D6DE16F89}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelServiceAPITests", "TestHotelService\HotelServiceAPITests.csproj", "{CACC827D-77AA-4810-BFA4-B86D6DE16F89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

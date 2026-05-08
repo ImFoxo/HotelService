@@ -33,15 +33,6 @@ namespace HotelServiceAPI
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddGoogle(options =>
-            {
-                options.ClientId = builder.Configuration["Authentication:Google:ClientId"]
-                    ?? throw new InvalidOperationException("Google ClientId is not configured.");
-                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
-                    ?? throw new InvalidOperationException("Google ClientSecret is not configured.");
-                options.SaveTokens = true;
-                options.SignInScheme = IdentityConstants.ExternalScheme;
-            })
             .AddJwtBearer(options =>
             {
                 options.RequireHttpsMetadata = false;
@@ -59,6 +50,20 @@ namespace HotelServiceAPI
                     RoleClaimType = ClaimTypes.Role
                 };
             });
+
+            // Google auth
+            var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+            var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+            if (!googleClientId.IsNullOrEmpty() && !googleClientSecret.IsNullOrEmpty())
+            {
+                builder.Services.AddAuthentication().AddGoogle(options =>
+                {
+                    options.ClientId = googleClientId!;
+                    options.ClientSecret = googleClientSecret!;
+                    options.SaveTokens = true;
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                });
+            }
 
             // Identity options
             // TODO: remove in production
