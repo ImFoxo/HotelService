@@ -1,5 +1,15 @@
 # HotelServiceAPI
 
+## Table of contents
+- [General Description](https://github.com/ImFoxo/HotelService#general-description)
+- [Key Features](https://github.com/ImFoxo/HotelService#key-features)
+- [Technology Stack](https://github.com/ImFoxo/HotelService#technology-stack)
+- [Testing Environment](https://github.com/ImFoxo/HotelService#testing-environment)
+- [Additional Technical Solutions](https://github.com/ImFoxo/HotelService#additional-technical-solutions)
+- [Getting Started](https://github.com/ImFoxo/HotelService#getting-started)
+- [Using accounts](https://github.com/ImFoxo/HotelService#using-accounts)
+- [Running Tests](https://github.com/ImFoxo/HotelService#running-tests)
+
 ## General Description
 A backend system for managing hotel resource reservations (rooms, conference halls) built with ASP.NET Core 8. The project emphasizes robust architecture and data integrity.
 
